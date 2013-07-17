@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ oim.id }}</title>
+  </head>
+  <body>
+    <table border="0">
+      {% for k, v in oim.iteritems() %}
+      <tr><th>{{ k }}</th><td>{{ v }}</td></tr>
+      {% endfor %}
+      <tr><th>image</th><td><img src="/{{ oim.path }}"/></td></tr>
+    </table>
+  </body>
+</html>
