@@ -20,7 +20,7 @@ import requests
 UPLOAD_FOLDER = core.ORIG_IMG_DB
 ALLOWED_EXTENSIONS = set(['gif', 'png', 'jpg'])
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['API_SERVICE'] = 'http://localhost:8000'
 
@@ -42,12 +42,17 @@ def show_original_image(orig_img_id):
 @app.route('/v1/original_images/<orig_img_id>/value/<value>', methods=['POST'])
 def post_original_image_for_value(orig_img_id, value):
     oi = core.OrigImage.make_from_id(orig_img_id)
-    map(
-        lambda splt_img_id, val: core \
-            .get_perceived_character_cluster_instance(val) \
-            .add_perceived_character(
-                core.PerceivedCharacter.make_from_seed(splt_img_id)), 
-        oi.split_list, value)
+    # map(
+    #     lambda splt_img_id, val: core \
+    #         .get_perceived_character_cluster_instance(val) \
+    #         .add_perceived_character(
+    #             core.PerceivedCharacter.make_from_seed(splt_img_id)), 
+    #     oi.split_list, value)
+    for sid, v in zip(oi.split_list, value):
+        if core.SplitedImage.make_from_id(sid).get_character() != v:
+            core\
+                .get_perceived_character_cluster_instance(v)\
+                .add_perceived_character(core.PerceivedCharacter.make_from_seed(sid))
     return core.no_content_response()
 
 @app.route('/v1/splited_images', methods=['GET'])
@@ -128,17 +133,6 @@ def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-@app.route('/photos/<photo_id>')
-def show_photos(photo_id):
-    return '''
-<!doctype html>
-<html>
-<body>
-<img src="%s"/>
-</body>
-</html>
-''' % url_for("static", filename=photo_id)
-
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
@@ -152,7 +146,7 @@ def upload():
             files = {'original_image': (filename, stream)}
             resp = requests.post(
                 app.config['API_SERVICE']+'/v1/original_images', files=files)
-    return render_template('index.html', response=resp.json)
+    return render_template('index.html', response=resp.json())
 
 @app.route('/debug', methods=['POST'])
 def debug():
