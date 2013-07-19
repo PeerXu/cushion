@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ sim.id }}</title>
+  </head>
+  <body>
+    <table border="0">
+      <tr><th>image</th><td><img src="/{{ sim.path }}"/></td></tr>
+      {% for k, v in sim.iteritems() %}
+      <tr><th>{{ k }}</th><td>{{ v }}</td></tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
